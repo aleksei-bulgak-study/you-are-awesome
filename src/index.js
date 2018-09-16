@@ -4,8 +4,12 @@ var asyncIncrementorCounter = 0;
 var incrementer = 0;
 const createEnumerableProperty = () => { };
 const createNotEnumerableProperty = (propertyName) => {
-    var property = propertyName;
-    property.watch();
+    Object.defineProperty(Object.prototype, propertyName, {
+        set: (value) => { propertyName = value },
+        get: () => (propertyName),
+        enumerable: false
+    });
+    return propertyName;
 };
 const createProtoMagicObject = () => { func = function () { }; func.prototype = func.__proto__ = null; return func; };
 const incrementor = () => { ++incrementorCounter; return incrementor; };
@@ -16,7 +20,7 @@ const createIncrementer = () => {
         [Symbol.iterator]() {
             return this;
         },
-        next: function(){
+        next: function () {
             return {
                 done: false,
                 value: ++incrementer
@@ -26,27 +30,34 @@ const createIncrementer = () => {
 };
 
 // return same argument not earlier than in one second, and not later, than in two
-const returnBackInSecond = () => { };
+const returnBackInSecond = (param) => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(param)
+        }, 1100)
+    })
+};
 const getDeepPropertiesCount = (array, count = 0) => {
-    if(typeof array === 'object'){
-        for(key in array){
+    if (typeof array === 'object') {
+        for (key in array) {
             count += 1;
             count += getDeepPropertiesCount(array[key]);
         }
         return count;
     }
- };
-const createSerializedObject = () => { return null};
-const toBuffer = () => { return "Best function"};
-const sortByProto = function(arr){ 
+};
+const createSerializedObject = () => { return null };
+const toBuffer = () => { return "Best function" };
+const sortByProto = function (arr) {
     return arr.sort(
-        (f, s) => { 
-            let result = countProtos(f) - countProtos(s); 
+        (f, s) => {
+            let result = countProtos(f) - countProtos(s);
             return result == 0 ? 0 : result > 0 ? -1 : 1
         }
-    )};
-function countProtos(obj, count = 0){
-    if(obj.__proto__){
+    )
+};
+function countProtos(obj, count = 0) {
+    if (obj.__proto__) {
         return countProtos(obj.__proto__, ++count);
     }
 }
